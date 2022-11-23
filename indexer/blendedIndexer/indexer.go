@@ -33,7 +33,7 @@ func BuildIndex(path string, threadsCount int) (*InvertedIndex, error) {
 
 		go func() {
 			for doc := range jobs {
-				file, err := os.Open(doc)
+				file, err := os.Open(path + doc)
 				if err != nil {
 					log.Println(err)
 					wg.Done()
@@ -59,8 +59,9 @@ func BuildIndex(path string, threadsCount int) (*InvertedIndex, error) {
 			}
 			wg.Done()
 		}()
-		wg.Wait()
 	}
+	wg.Wait()
+
 	return ii, nil
 }
 
@@ -84,6 +85,10 @@ type InvertedIndex struct {
 }
 
 func (ii *InvertedIndex) insert(word string, fileName string) {
+	if ii.m[word] == nil {
+		ii.m[word] = make(map[string]int)
+	}
+
 	ii.m[word][fileName] += 1
 }
 
