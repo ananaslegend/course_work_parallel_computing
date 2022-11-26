@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"text/tabwriter"
 )
 
 func BuildIndex(path string, threadsCount int) (*InvertedIndex, error) {
@@ -65,17 +66,35 @@ func BuildIndex(path string, threadsCount int) (*InvertedIndex, error) {
 	return ii, nil
 }
 
-func (ii *InvertedIndex) FindWordEntering() {
+func (ii *InvertedIndex) PrintSingleWordEntering(word string) {
+	em := ii.m[word]
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.Debug)
+	fmt.Fprintln(w, "\nFile Name\t Entering")
+	for file, ent := range em {
+		fmt.Fprintln(w, file, "\t", ent)
+	}
 
+	if err := w.Flush(); err != nil {
+		log.Println(err)
+		return
+	}
 }
 
-func (ii *InvertedIndex) Print() {
+func (ii *InvertedIndex) PrintIndexTable() {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.Debug)
+	fmt.Fprintln(w, "\nWord\t [File Name : Entering]")
+
 	for word, files := range ii.m {
-		str := fmt.Sprintf("%s: ", word)
+		str := fmt.Sprintf("%s\t", word)
 		for filename, number := range files {
-			str += fmt.Sprintf("[%s : %d]", filename, number)
+			str += fmt.Sprintf(" [%s : %d]", filename, number)
 		}
-		fmt.Println(str)
+		fmt.Fprintln(w, str)
+	}
+
+	if err := w.Flush(); err != nil {
+		log.Println(err)
+		return
 	}
 }
 

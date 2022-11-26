@@ -4,13 +4,25 @@ import (
 	"course_work_parallel_computing/indexer/blendedIndexer"
 )
 
-func main() {
-	//threadCount := 34
+var (
+	path    string
+	threads int
+)
 
-	index, err := blendedIndexer.BuildIndex("./test/", 2)
+func main() {
+	//if flag.StringVar(&path, "path", "", "path to data that will be indexed"); path[len(path)-1:] != "/" {
+	//	path += "/"
+	//}
+
+	path = "./test/"
+	threads = 2
+
+	index, err := blendedIndexer.BuildIndex(path, threads)
 	if err != nil {
 		return
 	}
 
-	index.Print()
+	index.PrintIndexTable()
+
+	index.PrintSingleWordEntering("string")
 }
