@@ -2,6 +2,7 @@ package blendedIndexer
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +11,9 @@ import (
 )
 
 func BuildIndex(path string, threadsCount int) (*InvertedIndex, error) {
+	if threadsCount < 1 {
+		return nil, errors.New("thread count should be grater then 0")
+	}
 	docs, err := os.ReadDir(path)
 	if err != nil {
 		log.Println(err)
