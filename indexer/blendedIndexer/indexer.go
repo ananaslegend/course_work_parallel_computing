@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"text/tabwriter"
 )
@@ -49,7 +50,7 @@ func BuildIndex(path string, threadsCount int) (*InvertedIndex, error) {
 				scanner.Split(bufio.ScanWords)
 
 				for scanner.Scan() {
-					word := scanner.Text()
+					word := strings.Trim(scanner.Text(), ".,/:';!@#$%&*()`~<>[]{}\n\r")
 
 					ii.lock.Lock()
 					ii.insert(word, doc)
