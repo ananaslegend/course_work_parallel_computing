@@ -63,12 +63,14 @@ func main() {
 					fmt.Printf("\n1. Rebuild index" +
 						"\n2. Search word " +
 						"\n3. Print index table" +
-						"\n4. Time result \n:")
+						"\n4. Time result" +
+						"\n5. Benchmark" +
+						"\n:")
 
 					cStr, _ := reader.ReadString('\n')
 					c, err := strconv.Atoi(validateInputString(cStr))
 
-					if err != nil || c <= 0 || c > 4 {
+					if err != nil {
 						printFailInput()
 						continue
 					} else {
@@ -104,6 +106,22 @@ func main() {
 							index.PrintIndexTable()
 						case 4:
 							printResult(result)
+						case 5:
+							var iterCount int = 1
+							for {
+								fmt.Printf("\nIterations\n:")
+								iStr, _ := reader.ReadString('\n')
+								iterCount, err = strconv.Atoi(validateInputString(iStr))
+								if err != nil {
+									printFailInput()
+									continue
+								} else {
+									break
+								}
+							}
+							benchmark(iterCount, path)
+						default:
+							printFailInput()
 						}
 					}
 				}
@@ -111,7 +129,6 @@ func main() {
 		}
 		continue
 	}
-
 }
 
 func printResult(result map[int]string) {
@@ -141,4 +158,36 @@ func validateInputString(str string) string {
 func printFailInput() {
 	fmt.Printf("\nFAIL - Incorrect value\n" +
 		"Please try again\n")
+}
+
+func benchmark(iterations int, path string) {
+	threads := []int{1, 2, 3, 4, 6, 8, 10, 16, 50, 100, 500, 1000, 3000, 6000, 12500}
+	result := make(map[int]time.Duration)
+
+	for i := 1; i <= iterations; i++ {
+		for _, th := range threads {
+			start := time.Now()
+			_, err := blendedIndexer.BuildIndex(path, th)
+			if err != nil {
+				fmt.Printf("\nFAIL - %s\n", err)
+				return
+			}
+			duration := time.Since(start)
+
+			result[th] += duration
+		}
+	}
+	for index, durationSum := range result {
+		result[index] = durationSum / time.Duration(iterations) // average value
+	}
+
+	resultStr := func() map[int]string {
+		var resultStr = make(map[int]string, len(result))
+		for i, v := range result {
+			resultStr[i] = v.String()
+		}
+		return resultStr
+	}
+
+	printResult(resultStr())
 }
